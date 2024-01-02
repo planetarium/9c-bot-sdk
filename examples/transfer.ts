@@ -5,7 +5,7 @@ import {
   HeadlessClient,
   RawPrivateKey,
   Signer,
-} from "../mod.ts";
+} from "./_remote.ts";
 import { parse } from "https://deno.land/std@0.200.0/flags/mod.ts";
 import { Decimal } from "https://esm.sh/decimal.js@10.4.3";
 
