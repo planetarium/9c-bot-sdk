@@ -22,3 +22,4 @@ export {
   RecordView as BencodexRecordView,
   type Value as BencodexValue,
 } from "https://esm.sh/@planetarium/bencodex@0.2.2";
+export { Decimal } from "https://esm.sh/decimal.js@10.4.3";

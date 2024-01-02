@@ -1,5 +1,15 @@
-import { Address, encodeBencodex, encodeHex, encodeSignedTx } from "./deps.ts";
+import {
+  Address,
+  Currency,
+  Decimal,
+  encodeBencodex,
+  encodeHex,
+  encodeSignedTx,
+  FungibleAssetValue,
+} from "./deps.ts";
 import { SignedTx } from "./signer.ts";
+
+type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
 
 export class HeadlessClient {
   constructor(private readonly endpoint: string) {}
@@ -57,10 +67,56 @@ export class HeadlessClient {
     return resp.nodeStatus.genesis.hash;
   }
 
+  async getBalance(
+    address: Address,
+    currency: Currency,
+  ): Promise<FungibleAssetValue> {
+    const resp = await this.#request(
+      `
+        query GetBalance($address: Address!, $currency: CurrencyInput!) {
+          stateQuery {
+            balance(address: $address, currency: $currency) {
+              quantity
+            }
+          }
+      }`,
+      "GetBalance",
+      {
+        address: address.toHex(),
+        currency: {
+          ticker: currency.ticker,
+          decimalPlaces: currency.decimalPlaces,
+          minters: currency.minters === null
+            ? null
+            : Array.from(currency.minters).map((x) => encodeHex(x)),
+          totalSupplyTrackable: currency.totalSupplyTrackable,
+          ...(currency.maximumSupply === null
+            ? {
+              maximumSupplyMajorUnit: null,
+              maximumSupplyMinorUnit: null,
+            }
+            : {
+              maximumSupplyMajorUnit: Number(currency.maximumSupply.major),
+              maximumSupplyMinorUnit: Number(currency.maximumSupply.minor),
+            }),
+        },
+      },
+    );
+
+    return {
+      currency,
+      rawValue: BigInt(
+        new Decimal(resp.stateQuery.balance.quantity).mul(
+          Decimal.pow(10, currency.decimalPlaces),
+        ).toFixed(0),
+      ),
+    };
+  }
+
   async #request(
     query: string,
     operationName: string,
-    variables: Record<string, string | number>,
+    variables: Json,
   ): Promise<any> {
     const resp = await fetch(this.endpoint, {
       method: "POST",
