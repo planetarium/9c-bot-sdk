@@ -1,8 +1,8 @@
 import {
   Address,
   AssetTransfer,
-  CRYSTAL,
   HeadlessClient,
+  ODIN_NCG,
   RawPrivateKey,
   Signer,
 } from "./_remote.ts";
@@ -23,8 +23,8 @@ const transfer = new AssetTransfer(signer);
 const txid = await transfer.transfer(
   Address.fromHex("0x9093dd96c4bb6b44a9e0a522e2de49641f146223", true),
   {
-    currency: CRYSTAL,
-    rawValue: BigInt(new Decimal(1).pow(CRYSTAL.decimalPlaces).toFixed(0)),
+    currency: ODIN_NCG,
+    rawValue: BigInt(new Decimal(0.01).pow(ODIN_NCG.decimalPlaces).toFixed(0)),
   },
 );
 
