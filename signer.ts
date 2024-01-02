@@ -39,7 +39,7 @@ export class Signer {
       timestamp: timestamp || new Date(),
       maxGasPrice: {
         currency: MEAD,
-        rawValue: 1n,
+        rawValue: 1000000000000000000n,
       },
       gasLimit,
     };
