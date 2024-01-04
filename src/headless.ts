@@ -11,6 +11,17 @@ import { SignedTx } from "./signer.ts";
 
 type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
 
+type TxStatus = "SUCCESS" | "FAILURE" | "INVALID" | "STAGING";
+
+interface TxResult {
+  txStatus: TxStatus;
+  blockHash: string;
+  blockIndex: number;
+  inputState: string;
+  outputState: string;
+  exceptionNames: string[];
+}
+
 export class HeadlessClient {
   constructor(private readonly endpoint: string) {}
 
@@ -65,6 +76,30 @@ export class HeadlessClient {
       {},
     );
     return resp.nodeStatus.genesis.hash;
+  }
+
+  async getTxResult(txId: string): Promise<TxResult> {
+    const resp = await this.#request(
+      `
+        query GetTxResult($txId: TxId!) {
+          transaction {
+            transactionResult(txId: $txId) {
+              txStatus
+              blockIndex
+              blockHash
+              inputState
+              outputState
+              exceptionNames
+            }
+          }
+      }`,
+      "GetTxResult",
+      {
+        txId,
+      },
+    );
+
+    return resp.transaction.transactionResult;
   }
 
   async getBalance(
